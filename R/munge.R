@@ -13,7 +13,8 @@ myround <- function(x, digits){
 table_reader <- function(x){
   table1 <- read_csv(x) 
   names(table1)[1] <- "trait"
-  drop_cols <- c("ageSD", "beta_percDiff_allVsMult", "tStat_percDiff_allVsMult", "PvalCohort", "tStat", "tStat_males", "tStat_females")
+  drop_cols <- c("ageSD", "beta_percDiff_allVsMult", "tStat_percDiff_allVsMult", 
+                 "PvalCohort", "tStat", "tStat_males", "tStat_females", "tStat_manyCont")
   table1 <- table1 %>%
     select(-any_of(drop_cols)) 
   if(str_detect(x, "controls")){
@@ -22,9 +23,13 @@ table_reader <- function(x){
   }
   if(str_detect(x, "controls", negate = TRUE)){
     table1 <- table1 %>%
-      select(matches("trait") | matches("*manyCont")) 
+      select(matches("trait") | matches("*manyCont")) %>%
+      rename(N_total = Nunique_manyCont, N_controls = Ncontrol_manyCont,
+             N_treated = Ntreat_manyCont, beta = beta_manyCont, SE = SE_manyCont,
+             Pval = Pval_manyCont, Pval_intSex = intSex_Pval_manyCont)
   }
-  table1 <- map_if(table1, is.numeric, myround, digits = 4) %>%
+  table1 <- table1 %>%
+    map_if(is.numeric, myround, digits = 4) %>%
     as_tibble
   return(table1)
 }
@@ -38,7 +43,6 @@ names(tables[["femur_HBX_both"]])
 tables[["femur_HBX_both"]]
 
 element_bindr <- function(mylist, dataset, intervention){
-  #list_name <- paste0(dataset, "_", intervention)
   list_name_both <- paste0(dataset, "_", intervention, "_both")
   list_name_males <- paste0(dataset, "_", intervention, "_males")
   list_name_females <- paste0(dataset, "_", intervention, "_females")
@@ -48,14 +52,17 @@ element_bindr <- function(mylist, dataset, intervention){
             .id = "sex")
 }
 
-tables[["femur_BS"]] <- element_bindr(tables, "femur", "BS")
-tables[["femur_BS"]] %>%
-  glimpse()
+datasets <- "femur"
+interventions <- c("BS", "CQ", "HBX", "L")
 
-tables[["femur_BS"]] <- bind_rows("Both" = tables[["femur_BS_both"]], 
-                                  "Males" = tables[["femur_BS_males"]],
-                                  "Females" = tables[["femur_BS_females"]],
-                                  .id = "sex")
+for(i in datasets){
+  for(j in interventions){
+    tables[[paste(i, j, sep = "_")]] <- element_bindr(tables, i, j)
+  }
+}
+
+keep_elements <- paste(datasets, c("controls", interventions), sep = "_")
+tables <- tables[keep_elements]
 
 write_rds(tables, path = "data/tables_age/femur/tables_age.rds")
 

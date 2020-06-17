@@ -52,7 +52,7 @@ server <- function(input, output, session) {
         query_dataset_cleaned <- switch(input$query_dataset,
                                         "Femur" = "femur")
         trait_list <- read_rds(paste0("data/tables_power/", query_dataset_cleaned, "/tables_ss.rds"))
-        trait_list <- do.call(rbind, trait_list)
+        trait_list <- bind_rows(trait_list)
         trait_vector <- sort(unique(trait_list$trait))
         updateSelectizeInput(session, 
                              inputId = "query_trait",
@@ -78,6 +78,7 @@ server <- function(input, output, session) {
                                              "Controls" = "controls",
                                              "Beta Sito-sterol" = "BS",
                                              "Clioquinol" = "CQ",
+                                             "HBX" = "HBX",
                                              "Lithium" = "L")
         tables_age <- read_rds(paste0("data/tables_age/", query_dataset_cleaned, "/tables_age.rds"))
         tables_age <- as_tibble(tables_age[[paste(query_dataset_cleaned, query_intervention_cleaned, sep = "_")]]) 
@@ -95,11 +96,11 @@ server <- function(input, output, session) {
         query_dataset_cleaned <- switch(input$query_dataset,
                                         "Femur" = "femur")
         tables_ss <- read_rds(paste0("data/tables_power/", query_dataset_cleaned, "/tables_ss.rds"))
-        tables_ss <- do.call(rbind, tables_ss)
-        tables_ss <- remove_rownames(tables_ss)
+        tables_ss <- bind_rows(tables_ss)
         tables_ss %>%
+            remove_rownames() %>%
             filter(trait == input$query_trait) %>%
-            select(last_col(), everything())
+            select(effect_size, )
     },
     options = list(lengthMenu = c(10, 50), pageLength = 10, dom = 'lfrtipB', 
                    buttons = c('copy', 'csv', 'excel')), 
