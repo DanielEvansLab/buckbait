@@ -100,7 +100,9 @@ server <- function(input, output, session) {
         tables_ss %>%
             remove_rownames() %>%
             filter(trait == input$query_trait) %>%
-            select(effect_size, )
+            select(effect_size, obs_3 = N_3times, obs_4 = N_4times, 
+                   obs_5 = N_5times, obs_6 = N_6times, obs_7 = N_7times, 
+                   obs_8 = N_8times, obs_9 = N_9times)
     },
     options = list(lengthMenu = c(10, 50), pageLength = 10, dom = 'lfrtipB', 
                    buttons = c('copy', 'csv', 'excel')), 
