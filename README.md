@@ -1,7 +1,7 @@
 # BAIT data and code for shiny app
 
 ## BAIT data
-All data can be found in the data directory of this repository. Data is saved as binary rds files that can opened in R with `readr::read_rds()` or `base::readRDS()`.
+All data can be found in the data directory of this repository. Data is saved as binary rds files that can be opened in R with `readr::read_rds()` or `base::readRDS()`.
 
 ## Deploy Shiny app on shinyapps.io.
 
