@@ -41,7 +41,8 @@ ui <- fluidPage(
                          value = "Sample Size calculations", 
                          DT::dataTableOutput("table_ss"),
                          div("Select a sample size estimate for sample size calculation text.", style = "color:blue; font-size:large"),
-                         textOutput("power_text"))
+                         textOutput("power_text")),
+                tabPanel("Code", includeMarkdown("data/README_code.md"))
             )
         )
     )
