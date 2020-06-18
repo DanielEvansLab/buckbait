@@ -42,7 +42,7 @@ ui <- fluidPage(
                          DT::dataTableOutput("table_ss"),
                          div("Click a sample size estimate in the table for text describing the sample size calculation.", style = "color:blue; font-size:large"),
                          textOutput("power_text")),
-                tabPanel("Code", includeMarkdown("data/README_code.md"))
+                tabPanel("Data and Code", includeMarkdown("data/README_code.md"))
             )
         )
     )
@@ -122,6 +122,7 @@ server <- function(input, output, session) {
     output$power_text <- renderText({
         req(nrow(input$table_ss_cells_selected) > 0)
         if(input$table_ss_cells_selected[1,2] == 0) {
+            #If the first column is selected, print this
             text1 <- "Select a sample size estimate, not the effect size, for sample size calculation text."
             text1
         } else {
