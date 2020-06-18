@@ -40,7 +40,7 @@ ui <- fluidPage(
                 tabPanel(title = "Sample size calculations", 
                          value = "Sample Size calculations", 
                          DT::dataTableOutput("table_ss"),
-                         div("Select a sample size estimate for sample size calculation text.", style = "color:blue; font-size:large"),
+                         div("Click a sample size estimate in the table for text describing the sample size calculation.", style = "color:blue; font-size:large"),
                          textOutput("power_text")),
                 tabPanel("Code", includeMarkdown("data/README_code.md"))
             )
@@ -126,7 +126,7 @@ server <- function(input, output, session) {
             text1
         } else {
             text1 <- paste0("To achieve 80% power to detect a ", table_ss_rv()[input$table_ss_cells_selected[1,1],1]*100, 
-                            "% change between two groups in ", input$query_trait, " with ", input$table_ss_cells_selected[1,2] + 2, 
+                            "% change in ", input$query_trait, " between two groups with ", input$table_ss_cells_selected[1,2] + 2, 
                             " repeated observations, ",
                             round(table_ss_rv()[input$table_ss_cells_selected[1,1],input$table_ss_cells_selected[1,2] + 1]), 
                             " mice are needed in each group.")
