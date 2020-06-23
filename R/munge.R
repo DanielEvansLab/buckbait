@@ -3,6 +3,14 @@ library(tidyverse)
 
 #input all tables of longitudinal age associations into a list
 myfiles <- list.files(path = "data_raw/tables_age/femur", pattern = ".csv", full.names = TRUE)
+myfiles <- list.files(path = "data_raw/tables_age/kyphosis", pattern = ".csv", full.names = TRUE)
+myfiles <- list.files(path = "data_raw/tables_age/metabolic", pattern = ".csv", full.names = TRUE)
+
+myrawpath <- "data_raw/tables_age/metabolic/"
+datasets <- "metabolic"
+interventions <- c("BS", "CQ", "HBX", "L")
+myoutpath1 <- "data/tables_age/metabolic/tables_age.rds"
+
 
 myround <- function(x, digits){
   if_else(x > 1,
@@ -44,11 +52,9 @@ table_reader <- function(x){
 
 tables <- map(myfiles, table_reader)
 listnames <- myfiles %>%
-  str_replace_all("data_raw/tables_age/femur/", "") %>%
+  str_replace_all(myrawpath, "") %>%
   str_replace_all(".csv", "")
 names(tables) <- listnames
-names(tables[["femur_HBX_both"]])
-tables[["femur_HBX_both"]]
 
 element_bindr <- function(mylist, dataset, intervention){
   list_name_both <- paste0(dataset, "_", intervention, "_both")
@@ -60,9 +66,6 @@ element_bindr <- function(mylist, dataset, intervention){
             .id = "sex")
 }
 
-datasets <- "femur"
-interventions <- c("BS", "CQ", "HBX", "L")
-
 for(i in datasets){
   for(j in interventions){
     tables[[paste(i, j, sep = "_")]] <- element_bindr(tables, i, j)
@@ -72,12 +75,12 @@ for(i in datasets){
 keep_elements <- paste(datasets, c("controls", interventions), sep = "_")
 tables <- tables[keep_elements]
 
-write_rds(tables, path = "data/tables_age/femur/tables_age.rds")
+write_rds(tables, path = myoutpath1)
 
 
 #### Sample size calculation tables
 #input all ss tables into a list
-dataset <- "femur"
+dataset <- "metabolic"
 mypathIn <- paste0("data_raw/tables_power/", dataset)
 mypathOut <- paste0("data/tables_power/", dataset, "/tables_ss.rds")
 myfiles <- list.files(path = mypathIn, pattern = ".csv", full.names = TRUE)
@@ -100,7 +103,9 @@ table_reader <- function(x){
   varname <- x %>%
     str_replace_all(mypathIn, "") %>%
     str_replace_all("/", "") %>%
-    str_replace_all("_dat_mult_power.csv", "")
+    str_replace_all("_dat_mult_power.csv", "") %>%
+    str_replace_all("mean_power.csv", "") %>%
+    str_replace_all("_power.csv", "")
   table1 <- table1 %>%
     mutate(trait = varname)
   return(table1)
@@ -111,9 +116,11 @@ tables <- map(myfiles, table_reader)
 listnames <- myfiles %>%
   str_replace_all(mypathIn, "") %>%
   str_replace_all("/", "") %>%
-  str_replace_all("_dat_mult_power.csv", "")
+  str_replace_all("_dat_mult_power.csv", "") %>%
+  str_replace_all("mean_power.csv", "") %>%
+  str_replace_all("_power.csv", "")
 names(tables) <- listnames
-tables[["BV.TV"]] %>%
+tables[["BMD"]] %>%
   glimpse()
 
 

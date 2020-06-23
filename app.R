@@ -25,7 +25,7 @@ ui <- fluidPage(
                             choices = c("Controls", "Beta Sito-sterol", "Clioquinol", "HBX", "Lithium"))
             ),
             conditionalPanel(
-                condition = "input.query_result_type == 'Sample Size calculations'",
+                condition = "input.query_result_type == 'Sample Size calculations' & input.query_dataset != 'Kyphosis'",
                 selectizeInput(inputId = 'query_trait', 
                             label = "Select trait", 
                             multiple = FALSE,
@@ -53,18 +53,32 @@ server <- function(input, output, session) {
     
     observeEvent(input$query_dataset, {
         query_dataset_cleaned <- switch(input$query_dataset,
-                                        "Femur" = "femur")
-        trait_list <- read_rds(paste0("data/tables_power/", query_dataset_cleaned, "/tables_ss.rds"))
-        trait_list <- bind_rows(trait_list)
-        trait_vector <- sort(unique(trait_list$trait))
-        updateSelectizeInput(session, 
-                             inputId = "query_trait",
-                             choices = trait_vector,
-                             server = TRUE,
-                             options = list(
-                                 maxOptions = 100,
-                                 maxItems = 1
-                             ))
+                                        "Femur" = "femur",
+                                        "Metabolic" = "metabolic")
+        if(input$query_dataset != "Kyphosis"){
+            trait_list <- read_rds(paste0("data/tables_power/", query_dataset_cleaned, "/tables_ss.rds"))
+            trait_list <- bind_rows(trait_list)
+            trait_vector <- sort(unique(trait_list$trait))
+            updateSelectizeInput(session, 
+                                 inputId = "query_trait",
+                                 choices = trait_vector,
+                                 server = TRUE,
+                                 options = list(
+                                     maxOptions = 100,
+                                     maxItems = 1
+                                 ))
+        } else {
+            trait_vector <- "None"
+            updateSelectizeInput(session, 
+                                 inputId = "query_trait",
+                                 choices = trait_vector,
+                                 server = TRUE,
+                                 options = list(
+                                     maxOptions = 100,
+                                     maxItems = 1
+                                 ))
+        }
+        
     })
     
     observeEvent(input$query_result_type, {
@@ -76,7 +90,9 @@ server <- function(input, output, session) {
     
     output$table_age <- DT::renderDataTable({
         query_dataset_cleaned <- switch(input$query_dataset,
-                                        "Femur" = "femur")
+                                        "Femur" = "femur", 
+                                        "Kyphosis" = "tortuosity",
+                                        "Metabolic" = "metabolic")
         query_intervention_cleaned <- switch(input$query_intervention,
                                              "Controls" = "controls",
                                              "Beta Sito-sterol" = "BS",
@@ -97,15 +113,21 @@ server <- function(input, output, session) {
     
     table_ss_rv <- reactive({
         query_dataset_cleaned <- switch(input$query_dataset,
-                                        "Femur" = "femur")
-        tables_ss <- read_rds(paste0("data/tables_power/", query_dataset_cleaned, "/tables_ss.rds"))
-        tables_ss <- bind_rows(tables_ss)
-        tables_ss %>%
-            remove_rownames() %>%
-            filter(trait == input$query_trait) %>%
-            select(effect_size, obs_3 = N_3times, obs_4 = N_4times, 
-                   obs_5 = N_5times, obs_6 = N_6times, obs_7 = N_7times, 
-                   obs_8 = N_8times, obs_9 = N_9times)
+                                        "Femur" = "femur",
+                                        "Metabolic" = "metabolic")
+        if(input$query_dataset != "Kyphosis"){
+            tables_ss <- read_rds(paste0("data/tables_power/", query_dataset_cleaned, "/tables_ss.rds"))
+            tables_ss <- bind_rows(tables_ss)
+            tables_ss %>%
+                remove_rownames() %>%
+                filter(trait == input$query_trait) %>%
+                select(effect_size, obs_3 = N_3times, obs_4 = N_4times, 
+                       obs_5 = N_5times, obs_6 = N_6times, obs_7 = N_7times, 
+                       obs_8 = N_8times, obs_9 = N_9times)
+        } else {
+            tables_ss <- NULL
+        }
+        
     })
     
     output$table_ss <- DT::renderDataTable({
