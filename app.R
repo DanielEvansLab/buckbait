@@ -51,6 +51,15 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
     
+    observeEvent(req(input$query_dataset == "Kyphosis" & input$query_result_type == "Sample Size calculations"), {
+        showModal(modalDialog(
+            title = "Usage notification",
+            "Sample size estimates not available for kyphosis, survival, or weight.",
+            footer = modalButton("OK")
+            )
+        )
+    })
+    
     observeEvent(input$query_dataset, {
         query_dataset_cleaned <- switch(input$query_dataset,
                                         "Femur" = "femur",
@@ -154,7 +163,7 @@ server <- function(input, output, session) {
                             round(table_ss_rv()[input$table_ss_cells_selected[1,1],input$table_ss_cells_selected[1,2] + 1]), 
                             " mice are needed in each group.")
             text1
-        }
+        } 
         })
     
 }
