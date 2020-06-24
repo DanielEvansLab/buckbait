@@ -149,7 +149,7 @@ server <- function(input, output, session) {
             text1
         } else {
             text1 <- paste0("To achieve 80% power to detect a ", table_ss_rv()[input$table_ss_cells_selected[1,1],1]*100, 
-                            "% change in ", input$query_trait, " between two groups with ", input$table_ss_cells_selected[1,2] + 2, 
+                            "% difference in age-associated changes in ", input$query_trait, " between two groups with ", input$table_ss_cells_selected[1,2] + 2, 
                             " repeated observations, ",
                             round(table_ss_rv()[input$table_ss_cells_selected[1,1],input$table_ss_cells_selected[1,2] + 1]), 
                             " mice are needed in each group.")
