@@ -11,7 +11,7 @@ ui <- fluidPage(
             selectInput(
                 inputId = "query_dataset",
                 label = "Select dataset",
-                choices = c("Femur", "Kyphosis", "Metabolic", "Survival", "Weight")
+                choices = c("Femur", "Kyphosis", "Metabolic")
             ),
             selectInput(
                 inputId = "query_result_type",
