@@ -11,7 +11,7 @@ ui <- fluidPage(
             selectInput(
                 inputId = "query_dataset",
                 label = "Select dataset",
-                choices = c("Femur", "Kyphosis", "Metabolic")
+                choices = c("Femur", "Kyphosis", "Metabolic", "Survival", "Weight")
             ),
             selectInput(
                 inputId = "query_result_type",
@@ -25,7 +25,7 @@ ui <- fluidPage(
                             choices = c("Controls", "Beta Sito-sterol", "Clioquinol", "HBX", "Lithium"))
             ),
             conditionalPanel(
-                condition = "input.query_result_type == 'Sample Size calculations' & input.query_dataset != 'Kyphosis'",
+                condition = "input.query_result_type == 'Sample Size calculations' & (input.query_dataset == 'Femur' | input.query_dataset == 'Metabolic')",
                 selectizeInput(inputId = 'query_trait', 
                             label = "Select trait", 
                             multiple = FALSE,
@@ -51,7 +51,7 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
     
-    observeEvent(req(input$query_dataset == "Kyphosis" & input$query_result_type == "Sample Size calculations"), {
+    observeEvent(req((input$query_dataset == "Kyphosis" | input$query_dataset == "Survival" | input$query_dataset == "Weight") & input$query_result_type == "Sample Size calculations"), {
         showModal(modalDialog(
             title = "Usage notification",
             "Sample size estimates not available for kyphosis, survival, or weight.",
@@ -64,7 +64,7 @@ server <- function(input, output, session) {
         query_dataset_cleaned <- switch(input$query_dataset,
                                         "Femur" = "femur",
                                         "Metabolic" = "metabolic")
-        if(input$query_dataset != "Kyphosis"){
+        if(input$query_dataset == "Femur" | input$query_dataset == "Metabolic"){
             trait_list <- read_rds(paste0("data/tables_power/", query_dataset_cleaned, "/tables_ss.rds"))
             trait_list <- bind_rows(trait_list)
             trait_vector <- sort(unique(trait_list$trait))
@@ -101,7 +101,9 @@ server <- function(input, output, session) {
         query_dataset_cleaned <- switch(input$query_dataset,
                                         "Femur" = "femur", 
                                         "Kyphosis" = "tortuosity",
-                                        "Metabolic" = "metabolic")
+                                        "Metabolic" = "metabolic",
+                                        "Survival" = "survival",
+                                        "Weight" = "weight")
         query_intervention_cleaned <- switch(input$query_intervention,
                                              "Controls" = "controls",
                                              "Beta Sito-sterol" = "BS",
@@ -109,9 +111,14 @@ server <- function(input, output, session) {
                                              "HBX" = "HBX",
                                              "Lithium" = "L")
         tables_age <- read_rds(paste0("data/tables_age/", query_dataset_cleaned, "/tables_age.rds"))
-        tables_age <- as_tibble(tables_age[[paste(query_dataset_cleaned, query_intervention_cleaned, sep = "_")]]) 
-        tables_age %>%
-            arrange(trait)
+        if(query_dataset_cleaned == "survival"){
+            tables_age %>%
+                filter(intervention == query_intervention_cleaned)
+        } else{
+            tables_age <- as_tibble(tables_age[[paste(query_dataset_cleaned, query_intervention_cleaned, sep = "_")]]) 
+            tables_age %>%
+                arrange(trait)
+        }
     },
     options = list(lengthMenu = c(40, 100, 200), pageLength = 40, dom = 'lfrtipB', 
                    buttons = c('copy', 'csv', 'excel')), 
@@ -124,7 +131,7 @@ server <- function(input, output, session) {
         query_dataset_cleaned <- switch(input$query_dataset,
                                         "Femur" = "femur",
                                         "Metabolic" = "metabolic")
-        if(input$query_dataset != "Kyphosis"){
+        if(input$query_dataset == "Femur" | input$query_dataset == "Metabolic"){
             tables_ss <- read_rds(paste0("data/tables_power/", query_dataset_cleaned, "/tables_ss.rds"))
             tables_ss <- bind_rows(tables_ss)
             tables_ss %>%

@@ -5,12 +5,12 @@ library(tidyverse)
 myfiles <- list.files(path = "data_raw/tables_age/femur", pattern = ".csv", full.names = TRUE)
 myfiles <- list.files(path = "data_raw/tables_age/kyphosis", pattern = ".csv", full.names = TRUE)
 myfiles <- list.files(path = "data_raw/tables_age/metabolic", pattern = ".csv", full.names = TRUE)
+myfiles <- list.files(path = "data_raw/tables_age/weight", pattern = ".csv", full.names = TRUE)
 
-myrawpath <- "data_raw/tables_age/metabolic/"
-datasets <- "metabolic"
+myrawpath <- "data_raw/tables_age/weight/"
+datasets <- "weight"
 interventions <- c("BS", "CQ", "HBX", "L")
-myoutpath1 <- "data/tables_age/metabolic/tables_age.rds"
-
+myoutpath1 <- "data/tables_age/weight/tables_age.rds"
 
 myround <- function(x, digits){
   if_else(x > 1,
@@ -76,6 +76,48 @@ keep_elements <- paste(datasets, c("controls", interventions), sep = "_")
 tables <- tables[keep_elements]
 
 write_rds(tables, path = myoutpath1)
+
+#### Survival analysis files
+myfiles <- list.files(path = "data_raw/tables_age/survival", pattern = ".csv", full.names = TRUE)
+myrawpath <- "data_raw/tables_age/survival/"
+datasets <- "survival"
+interventions <- c("BS", "CQ", "HBX", "L")
+myoutpath1 <- "data/tables_age/survival/tables_age.rds"
+
+myround <- function(x, digits){
+  if_else(x > 1,
+          round(x, digits),
+          signif(x, digits))
+}
+
+table_reader_survival <- function(x){
+  table1 <- read_csv(x) 
+  names(table1)[1] <- "intervention"
+  table1 <- table1 %>%
+    map_if(is.numeric, myround, digits = 4) %>%
+    as_tibble
+  return(table1)
+}
+
+tables <- map(myfiles, table_reader_survival)
+names(tables) <- c("both", "males", "females")
+
+element_bindr <- function(mylist){
+  list_name_both <- "both"
+  list_name_males <- "males"
+  list_name_females <- "females"
+  bind_rows("Both" = mylist[[list_name_both]], 
+            "Males" = mylist[[list_name_males]],
+            "Females" = mylist[[list_name_females]],
+            .id = "sex")
+}
+
+tables2 <- element_bindr(tables)
+tables2 <- tables2 %>%
+  add_row(sex = "Both", intervention = "controls")
+
+write_rds(tables2, path = myoutpath1)
+
 
 
 #### Sample size calculation tables
