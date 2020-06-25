@@ -5,7 +5,7 @@ library(tidyverse)
 
 ui <- fluidPage(
     theme = shinytheme("cerulean"),
-    titlePanel("Buck Institute BAIT"),
+    titlePanel("Therapeutically targeting aging slows age-related bone loss in mice."),
     sidebarLayout(
         sidebarPanel(
             selectInput(
