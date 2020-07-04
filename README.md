@@ -14,7 +14,6 @@ rsconnect::setAccountInfo(name='...', token='...', secret> ...')
 # getOption("repos")
 # output of this command should show repositories BioCsoft, BioCann, BioCexp, BioCworkflows, and CRAN
 # Make sure you're in the directory containing app.R
-deployApp(appFiles = c("app.R", "data", "R"))
+# To rename URL for app, one must archive old app on shinyapps.io, then delete rsconnect local folder, then re-run deployApp command below with appName argument.
+deployApp(appFiles = c("app.R", "data"), appName = "buckMouseAging")
 ```
-
-
